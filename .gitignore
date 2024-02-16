@@ -37,3 +37,7 @@ python/ffmpeg.exe
 python/xvapitch/base_v1.0.pt
 env*
 embeddings.txt
+*.exe
+*.pt
+*.dll
+*.bin

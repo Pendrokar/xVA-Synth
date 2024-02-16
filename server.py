@@ -2,6 +2,7 @@ import os
 import sys
 import traceback
 import multiprocessing
+import json
 
 torch_dml_device = None
 
@@ -20,7 +21,7 @@ if __name__ == '__main__':
     # Imports and logger setup
     # ========================
     try:
-        import python.pyinstaller_imports
+        # import python.pyinstaller_imports
         import numpy
 
         import logging
@@ -94,17 +95,7 @@ if __name__ == '__main__':
             pass
 
     if CPU_ONLY:
-        try:
-            import torch_directml
-            torch_dml_device = torch_directml.device()
-            logger.info("Successfully got the torch DirectML device")
-        except Exception as e:
-            # I've implemented support for DirectML, but at the time of writing (08/04/2023, v0.1.13.1.dev230301), it's hella broken...
-            # Not a single model can successfully .forward() when switching to DirectML device from cpu. I'm leaving in the code however,
-            # as I'd still like to add support for it once things are more stable. This try/catch should run ok when it's installed
-            torch_dml_device = torch.device("cpu")
-            logger.exception("Failed to get torch DirectML; falling back to cpu device")
-    # ========================
+        torch_dml_device = torch.device("cpu")
 
 
     try:
@@ -141,7 +132,7 @@ if __name__ == '__main__':
     class Handler(BaseHTTPRequestHandler):
         def _set_response(self):
             self.send_response(200)
-            self.send_header("Content-Type", "text/html")
+            self.send_header("Content-Type", "application/json")
             self.end_headers()
 
         def do_GET(self):
@@ -497,7 +488,7 @@ if __name__ == '__main__':
                     move_recorded_file(PROD, logger, models_manager, f'{"./resources/app" if PROD else "."}', file_path)
 
                 self._set_response()
-                self.wfile.write(req_response.encode("utf-8"))
+                self.wfile.write(json.dumps(req_response).encode('utf-8'))
             except Exception as e:
                 with open("./DEBUG_request.txt", "w+") as f:
                     f.write(traceback.format_exc())
